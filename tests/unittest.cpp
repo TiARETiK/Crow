@@ -1,3 +1,4 @@
+#include "crow/common.h"
 #define CROW_ENABLE_DEBUG
 #define CROW_LOG_LEVEL 0
 #include <sys/stat.h>
@@ -3947,7 +3948,8 @@ TEST_CASE("option_header_passed_in_full")
     static char buf[5012];
 
     SimpleApp app;
-    CROW_ROUTE(app, "/echo").methods("POST"_method)([](crow::request const& req) {
+    app.server_name("THIS_IS_AN_EXTREAMLY_LONG_SERVER_NAMETHIS_IS_AN_EXTREAMLY_LONG_SERVER_NAMETHIS_IS_AN_EXTREAMLY_LONG_SERVER_NAMETHIS_IS_AN_EXTREAMLY_LONG_SERVER_NAMETHIS_IS_AN_EXTREAMLY_LONG_SERVER_NAMETHIS_IS_AN_EXTREAMLY_LONG_SERVER_NAMETHIS_IS_AN_EXTREAMLY_LONG_SERVER_NAMETHIS_IS_AN_EXTREAMLY_LONG_SERVER_NAMETHIS_IS_AN_EXTREAMLY_LONG_SERVER_NAMETHIS_IS_AN_EXTREAMLY_LONG_SERVER_NAMETHIS_IS_AN_EXTREAMLY_LONG_SERVER_NAMETHIS_IS_AN_EXTREAMLY_LONG_SERVER_NAMETHIS_IS_AN_EXTREAMLY_LONG_SERVER_NAMETHIS_IS_AN_EXTREAMLY_LONG_SERVER_NAMETHIS_IS_AN_EXTREAMLY_LONG_SERVER_NAMETHIS_IS_AN_EXTREAMLY_LONG_SERVER_NAMETHIS_IS_AN_EXTREAMLY_LONG_SERVER_NAMETHIS_IS_AN_EXTREAMLY_LONG_SERVER_NAMETHIS_IS_AN_EXTREAMLY_LONG_SERVER_NAMETHIS_IS_AN_EXTREAMLY_LONG_SERVER_NAMETHIS_IS_AN_EXTREAMLY_LONG_SERVER_NAMETHIS_IS_AN_EXTREAMLY_LONG_SERVER_NAMETHIS_IS_AN_EXTREAMLY_LONG_SERVER_NAMETHIS_IS_AN_EXTREAMLY_LONG_SERVER_NAMETHIS_IS_AN_EXTREAMLY_LONG_SERVER_NAMETHIS_IS_AN_EXTREAMLY_LONG_SERVER_NAMETHIS_IS_AN_EXTREAMLY_LONG_SERVER_NAMETHIS_IS_AN_EXTREAMLY_LONG_SERVER_NAMETHIS_IS_AN_EXTREAMLY_LONG_SERVER_NAMETHIS_IS_AN_EXTREAMLY_LONG_SERVER_NAMETHIS_IS_AN_EXTREAMLY_LONG_SERVER_NAMETHIS_IS_AN_EXTREAMLY_LONG_SERVER_NAME");
+    CROW_ROUTE(app, "/echo").methods(crow::HTTPMethod::Options)([]() {
         // return req.body;
         crow::response response{};
         // response.body = "SomeRandomLongOutputqwertyuiopasdfghjklzxcvbnmqwertyuiopasdfghjklzxcvbnmqwertyuiopasdfghjklzxcvbnmqwertyuiopasdfghjklzxcvbnmqwertyuiopasdfghjklzxcvbnmqwertyuiopasdfghjklzxcvbnmqwertyuiopasdfghjklzxcvbnmqwertyuiopasdfghjklzxcvbnmqwertyuiopasdfghjklzxcvbnmqwertyuiopasdfghjklzxcvbnmqwertyuiopasdfghjklzxcvbnmqwertyuiopasdfghjklzxcvbnmqwertyuiopasdfghjklzxcvbnmqwertyuiopasdfghjklzxcvbnmqwertyuiopasdfghjklzxcvbnmqwertyuiopasdfghjklzxcvbnmqwertyuiopasdfghjklzxcvbnmqwertyuiopasdfghjklzxcvbnmqwertyuiopasdfghjklzxcvbnmqwertyuiopasdfghjklzxcvbnmqwertyuiopasdfghjklzxcvbnmqwertyuiopasdfghjklzxcvbnmqwertyuiopasdfghjklzxcvbnmqwertyuiopasdfghjklzxcvbnmqwertyuiopasdfghjklzxcvbnmqwertyuiopasdfghjklzxcvbnmqwertyuiopasdfghjklzxcvbnmqwertyuiopasdfghjklzxcvbnmqwertyuiopasdfghjklzxcvbnmqwertyuiopasdfghjklzxcvbnmqwertyuiopasdfghjklzxcvbnmqwertyuiopasdfghjklzxcvbnmqwertyuiopasdfghjklzxcvbnmqwertyuiopasdfghjklzxcvbnmqwertyuiopasdfghjklzxcvbnmqwertyuiopasdfghjklzxcvbnm";
@@ -3980,12 +3982,12 @@ TEST_CASE("option_header_passed_in_full")
         c.send(asio::buffer(rq));
         c.receive(asio::buffer(buf, 100));
         c.close();
-        std::cout << "__DEBUG__"
-                  << " about to print full buffer" << std::endl;
-        for (int i = 0; i < 5012; i++)
-        {
-            std::cout << buf[i] << std::endl;
-        }
+        // std::cout << "__DEBUG__"
+        //           << " about to print full buffer" << std::endl;
+        // for (int i = 0; i < 5012; i++)
+        // {
+        //     std::cout << buf[i] << std::endl;
+        // }
         return std::string(buf);
     };
 
@@ -4001,7 +4003,7 @@ TEST_CASE("option_header_passed_in_full")
     //   "\r\n";
 
     std::string request =
-      "POST /echo HTTP/1.1\r\n"
+      "OPTIONS /echo HTTP/1.1\r\n"
       "user-agent: unittest.cpp\r\n"
       "host: " LOCALHOST_ADDRESS ":45451\r\n"
       "content-length: 48\r\n"
