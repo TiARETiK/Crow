@@ -3948,17 +3948,14 @@ TEST_CASE("http2_upgrade_is_ignored")
 
 struct CustomCORSHandler
 {
-    // NOLINTNEXTLINE
     struct context
     {};
 
-    // NOLINTNEXTLINE
     void before_handle(crow::request& /*request*/,
                        crow::response& /*response*/,
                        context& /*context*/) const {}
 
     void
-      // NOLINTNEXTLINE
       after_handle(crow::request& /*request*/, crow::response& response, context& /*context*/) const
     {
         response.set_header("Access-Control-Expose-Headers",
@@ -4017,15 +4014,7 @@ TEST_CASE("option_header_passed_in_full")
     };
 
     std::string request =
-      "OPTIONS /echo HTTP/1.1\r\n"
-      "user-agent: unittest.cpp\r\n"
-      "host: " LOCALHOST_ADDRESS ":45451\r\n"
-      "content-length: 48\r\n"
-      "connection: upgrade\r\n"
-      "upgrade: h2c\r\n"
-      "\r\n"
-      "http2 upgrade is not supported so body is parsed\r\n"
-      "\r\n";
+      "OPTIONS /echo HTTP/1.1\r\n";
 
     auto res = make_request(request);
     CHECK(res.find(ServerName) != std::string::npos);
