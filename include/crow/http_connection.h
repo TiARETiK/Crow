@@ -128,7 +128,7 @@ namespace crow
                 buffers_.clear();
                 static std::string expect_100_continue = "HTTP/1.1 100 Continue\r\n\r\n";
                 buffers_.emplace_back(expect_100_continue.data(), expect_100_continue.size());
-                do_write_sync(buffers_);
+                do_write /*_sync*/ (/*buffers_*/);
             }
         }
 
@@ -143,10 +143,8 @@ namespace crow
             ctx_ = detail::context<Middlewares...>();
             req_.middleware_context = static_cast<void*>(&ctx_);
             req_.middleware_container = static_cast<void*>(middlewares_);
-            req_.io_context = &adaptor_.get_io_context();
-
+            req_.io_service = &adaptor_.get_io_service();
             req_.remote_ip_address = adaptor_.remote_endpoint().address().to_string();
-
             add_keep_alive_ = req_.keep_alive;
             close_connection_ = req_.close_connection;
 
@@ -357,7 +355,11 @@ namespace crow
                 headers_ += kv.second;
                 headers_ += crlf;
             }
-            buffers_.emplace_back(headers_.data(), headers_.size());
+
+            for (std::uint64_t i = 0; i < headers_.size(); ++i)
+            {
+                buffers_.emplace_back(headers_.data() + i, 1);
+            }
 
             if (!res.manual_length_header && !res.headers.count("content-length"))
             {
@@ -429,7 +431,7 @@ namespace crow
                 res_body_copy_.swap(res.body);
                 buffers_.emplace_back(res_body_copy_.data(), res_body_copy_.size());
 
-                do_write_sync(buffers_);
+                do_write /*_sync*/ (/*buffers_*/);
 
                 if (need_to_start_read_after_complete_)
                 {
@@ -560,6 +562,7 @@ namespace crow
                     return true;
                 }
             });
+            return;
         }
 
         void cancel_deadline_timer()

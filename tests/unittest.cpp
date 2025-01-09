@@ -38,8 +38,8 @@ public:
     HttpClient(std::string const& address, uint16_t port):
       c(ic)
     {
-        c.connect(asio::ip::tcp::endpoint( asio::ip::make_address(address),
-                                           port));
+        c.connect(asio::ip::tcp::endpoint(asio::ip::make_address(address),
+                                          port));
     }
 
     /** sends a request string through the socket */
@@ -674,8 +674,8 @@ TEST_CASE("server_handling_error_request_http_version")
         try
         {
             auto resp = HttpClient::request(LOCALHOST_ADDRESS,
-                                                   45451,
-                                                   "POST /\r\nContent-Length:3\r\nX-HeaderTest: 123\r\n\r\nA=B\r\n");
+                                            45451,
+                                            "POST /\r\nContent-Length:3\r\nX-HeaderTest: 123\r\n\r\nA=B\r\n");
             FAIL_CHECK();
         }
         catch (std::exception& e)
@@ -2392,7 +2392,6 @@ TEST_CASE("multipart")
 
         CHECK(res.code == 400);
         CHECK(res.body == "Empty boundary in multipart message");
-
     }
 
     //Boundary that differs from actual boundary
@@ -3940,5 +3939,100 @@ TEST_CASE("http2_upgrade_is_ignored")
 
     auto res = make_request(request);
     CHECK(res.find("http2 upgrade is not supported so body is parsed") != std::string::npos);
+    app.stop();
+}
+
+TEST_CASE("option_header_passed_in_full")
+{
+    // Crow does not support HTTP/2 so upgrade headers must be ignored
+    // relevant RFC: https://datatracker.ietf.org/doc/html/rfc7540#section-3.2
+
+    static char buf[5012];
+
+    SimpleApp app;
+    CROW_ROUTE(app, "/echo").methods("POST"_method)([](crow::request const& req) {
+        // return req.body;
+        crow::response response{};
+        // response.body = "SomeRandomLongOutputqwertyuiopasdfghjklzxcvbnmqwertyuiopasdfghjklzxcvbnmqwertyuiopasdfghjklzxcvbnmqwertyuiopasdfghjklzxcvbnmqwertyuiopasdfghjklzxcvbnmqwertyuiopasdfghjklzxcvbnmqwertyuiopasdfghjklzxcvbnmqwertyuiopasdfghjklzxcvbnmqwertyuiopasdfghjklzxcvbnmqwertyuiopasdfghjklzxcvbnmqwertyuiopasdfghjklzxcvbnmqwertyuiopasdfghjklzxcvbnmqwertyuiopasdfghjklzxcvbnmqwertyuiopasdfghjklzxcvbnmqwertyuiopasdfghjklzxcvbnmqwertyuiopasdfghjklzxcvbnmqwertyuiopasdfghjklzxcvbnmqwertyuiopasdfghjklzxcvbnmqwertyuiopasdfghjklzxcvbnmqwertyuiopasdfghjklzxcvbnmqwertyuiopasdfghjklzxcvbnmqwertyuiopasdfghjklzxcvbnmqwertyuiopasdfghjklzxcvbnmqwertyuiopasdfghjklzxcvbnmqwertyuiopasdfghjklzxcvbnmqwertyuiopasdfghjklzxcvbnmqwertyuiopasdfghjklzxcvbnmqwertyuiopasdfghjklzxcvbnmqwertyuiopasdfghjklzxcvbnmqwertyuiopasdfghjklzxcvbnmqwertyuiopasdfghjklzxcvbnmqwertyuiopasdfghjklzxcvbnmqwertyuiopasdfghjklzxcvbnmqwertyuiopasdfghjklzxcvbnmqwertyuiopasdfghjklzxcvbnmqwertyuiopasdfghjklzxcvbnm";
+        response.add_header("RandomHeaderKey1", "RandomHeaderValue1");
+        // response.add_header("RandomHeaderKey", "RandomHeaderValue");
+        // response.add_header("RandomHeaderKey", "RandomHeaderValue");
+        // response.add_header("RandomHeaderKey", "RandomHeaderValue");
+        // response.add_header("RandomHeaderKey", "RandomHeaderValue");
+        // response.add_header("RandomHeaderKey", "RandomHeaderValue");
+        // response.add_header("RandomHeaderKey", "RandomHeaderValue");
+        // response.add_header("RandomHeaderKey", "RandomHeaderValue");
+        // response.add_header("RandomHeaderKey", "RandomHeaderValue");
+        // response.add_header("RandomHeaderKey", "RandomHeaderValue");
+        // response.add_header("RandomHeaderKey", "RandomHeaderValue");
+        // response.add_header("RandomHeaderKey", "RandomHeaderValue");
+        // response.add_header("RandomHeaderKey", "RandomHeaderValue");
+        // response.add_header("RandomHeaderKey", "RandomHeaderValue");
+        // response.add_header("RandomHeaderKey", "RandomHeaderValue");
+        response.add_header("RandomHeaderKey2", "RandomHeaderValue2");
+        response.add_header("RandomHeaderKey3", "RandomHeaderValue3");
+        response.add_header("RandomHeaderKey4", "RandomHeaderValue4");
+        response.add_header("RandomHeaderKey5", "RandomHeaderValue5");
+        response.add_header("RandomHeaderKey6", "RandomHeaderValue6");
+        response.add_header("RandomHeaderKey7", "RandomHeaderValue7");
+        response.add_header("RandomHeaderKey7.5", "RandomHeaderValue7.5");
+        response.add_header("RandomHeaderKey8", "RandomHeaderValue8");
+        response.add_header("RandomHeaderKey9", "RandomHeaderValue9");
+
+        std::cout
+          << "__DEBUG__"
+          << " About to return from rout" << std::endl;
+
+        return response;
+    });
+
+    auto _ = app.bindaddr(LOCALHOST_ADDRESS).port(45451).run_async();
+
+    app.wait_for_server_start();
+    asio::io_service is;
+
+    auto make_request = [&](const std::string& rq) {
+        asio::ip::tcp::socket c(is);
+        c.connect(asio::ip::tcp::endpoint(
+          asio::ip::address::from_string(LOCALHOST_ADDRESS), 45451));
+        c.send(asio::buffer(rq));
+        c.receive(asio::buffer(buf, 100));
+        c.close();
+        std::cout << "__DEBUG__"
+                  << " about to print full buffer" << std::endl;
+        for (int i = 0; i < 5012; i++)
+        {
+            std::cout << buf[i] << std::endl;
+        }
+        return std::string(buf);
+    };
+
+    // std::string request =
+    //   "POST /echo HTTP/1.1\r\n"
+    //   "Accept: application/json, text/plain, */*\r\n"
+    //   "Content-Type: application/json\r\n"
+    //   "Content-Type: application/json\r\n"
+    //   "Referer: http://some.site/\r\n"
+    //   "Sec-Fetch-Dest: empty\r\n"
+    //   "Sec-Fetch-Mode: cors\r\n"
+    //   "Sec-Fetch-Site: cross-site\r\n"
+    //   "\r\n";
+
+    std::string request =
+      "POST /echo HTTP/1.1\r\n"
+      "user-agent: unittest.cpp\r\n"
+      "host: " LOCALHOST_ADDRESS ":45451\r\n"
+      "content-length: 48\r\n"
+      "connection: upgrade\r\n"
+      "upgrade: h2c\r\n"
+      "\r\n"
+      "http2 upgrade is not supported so body is parsed\r\n"
+      "\r\n";
+
+    auto res = make_request(request);
+    std::cout << "__DEBUG__" << std::endl
+              << res << std::endl
+              << "__DEBUG__" << std::endl;
+    CHECK(res.find("Content-Length: 0") != std::string::npos);
     app.stop();
 }
