@@ -59,6 +59,3 @@ cmake-build-debug
 .cache
 site
 venv
-
-#Language Server Cache
-.cache
