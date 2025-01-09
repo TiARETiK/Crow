@@ -1,4 +1,7 @@
 #include "crow/common.h"
+#include <asio/error_code.hpp>
+#include <asio/system_error.hpp>
+#include <exception>
 #define CROW_ENABLE_DEBUG
 #define CROW_LOG_LEVEL 0
 #include <sys/stat.h>
@@ -3943,35 +3946,48 @@ TEST_CASE("http2_upgrade_is_ignored")
     app.stop();
 }
 
+struct CustomCORSHandler
+{
+    // NOLINTNEXTLINE
+    struct context
+    {};
+
+    // NOLINTNEXTLINE
+    void before_handle(crow::request& /*request*/,
+                       crow::response& /*response*/,
+                       context& /*context*/) const {}
+
+    void
+      // NOLINTNEXTLINE
+      after_handle(crow::request& /*request*/, crow::response& response, context& /*context*/) const
+    {
+        response.set_header("Access-Control-Expose-Headers",
+                            "X-Total-Pages, X-Total-Entries, Content-Disposition");
+    }
+};
+
 TEST_CASE("option_header_passed_in_full")
 {
     static char buf[5012];
 
-    SimpleApp app;
-    app.server_name("THIS_IS_AN_EXTREAMLY_LONG_SERVER_NAME\nTHIS_IS_AN_EXTREAMLY_LONG_SERVER_NAME\nTHIS_IS_AN_EXTREAMLY_LONG_SERVER_NAME\nTHIS_IS_AN_EXTREAMLY_LONG_SERVER_NAME\nTHIS_IS_AN_EXTREAMLY_LONG_SERVER_NAME\nTHIS_IS_AN_EXTREAMLY_LONG_SERVER_NAME\nTHIS_IS_AN_EXTREAMLY_LONG_SERVER_NAME\nTHIS_IS_AN_EXTREAMLY_LONG_SERVER_NAME\nTHIS_IS_AN_EXTREAMLY_LONG_SERVER_NAME\nTHIS_IS_AN_EXTREAMLY_LONG_SERVER_NAME\nTHIS_IS_AN_EXTREAMLY_LONG_SERVER_NAME\nTHIS_IS_AN_EXTREAMLY_LONG_SERVER_NAME\nTHIS_IS_AN_EXTREAMLY_LONG_SERVER_NAME\nTHIS_IS_AN_EXTREAMLY_LONG_SERVER_NAME\nTHIS_IS_AN_EXTREAMLY_LONG_SERVER_NAME\nTHIS_IS_AN_EXTREAMLY_LONG_SERVER_NAME\nTHIS_IS_AN_EXTREAMLY_LONG_SERVER_NAME\nTHIS_IS_AN_EXTREAMLY_LONG_SERVER_NAME\nTHIS_IS_AN_EXTREAMLY_LONG_SERVER_NAME\nTHIS_IS_AN_EXTREAMLY_LONG_SERVER_NAME\nTHIS_IS_AN_EXTREAMLY_LONG_SERVER_NAME\nTHIS_IS_AN_EXTREAMLY_LONG_SERVER_NAME\nTHIS_IS_AN_EXTREAMLY_LONG_SERVER_NAME");
+    const std::string ServerName = "AN_EXTREMLY_UNIQUE_SERVER_NAME";
+
+    crow::App<crow::CORSHandler,
+              CustomCORSHandler>
+      app;
+
+    app.server_name(ServerName);
+
+
     CROW_ROUTE(app, "/echo").methods(crow::HTTPMethod::Options)([]() {
-        // return req.body;
         crow::response response{};
-        // response.body = "SomeRandomLongOutputqwertyuiopasdfghjklzxcvbnmqwertyuiopasdfghjklzxcvbnmqwertyuiopasdfghjklzxcvbnmqwertyuiopasdfghjklzxcvbnmqwertyuiopasdfghjklzxcvbnmqwertyuiopasdfghjklzxcvbnmqwertyuiopasdfghjklzxcvbnmqwertyuiopasdfghjklzxcvbnmqwertyuiopasdfghjklzxcvbnmqwertyuiopasdfghjklzxcvbnmqwertyuiopasdfghjklzxcvbnmqwertyuiopasdfghjklzxcvbnmqwertyuiopasdfghjklzxcvbnmqwertyuiopasdfghjklzxcvbnmqwertyuiopasdfghjklzxcvbnmqwertyuiopasdfghjklzxcvbnmqwertyuiopasdfghjklzxcvbnmqwertyuiopasdfghjklzxcvbnmqwertyuiopasdfghjklzxcvbnmqwertyuiopasdfghjklzxcvbnmqwertyuiopasdfghjklzxcvbnmqwertyuiopasdfghjklzxcvbnmqwertyuiopasdfghjklzxcvbnmqwertyuiopasdfghjklzxcvbnmqwertyuiopasdfghjklzxcvbnmqwertyuiopasdfghjklzxcvbnmqwertyuiopasdfghjklzxcvbnmqwertyuiopasdfghjklzxcvbnmqwertyuiopasdfghjklzxcvbnmqwertyuiopasdfghjklzxcvbnmqwertyuiopasdfghjklzxcvbnmqwertyuiopasdfghjklzxcvbnmqwertyuiopasdfghjklzxcvbnmqwertyuiopasdfghjklzxcvbnmqwertyuiopasdfghjklzxcvbnmqwertyuiopasdfghjklzxcvbnm";
-        for (int i = 0; i < 100; i++)
-        {
-            response.add_header("RandomHeaderKey" + std::to_string(i), "RandomHeaderValue" + std::to_string(i));
-        }
-
-        std::cout
-          << "__DEBUG__"
-          << " About to return from rout" << std::endl;
-
+        response.add_header("Key", "Value");
         return response;
     });
 
     auto _ = app.bindaddr(LOCALHOST_ADDRESS).port(45451).run_async();
 
     app.wait_for_server_start();
-
-
-    while (true)
-        ;
 
     asio::io_service is;
 
@@ -3980,27 +3996,28 @@ TEST_CASE("option_header_passed_in_full")
         c.connect(asio::ip::tcp::endpoint(
           asio::ip::address::from_string(LOCALHOST_ADDRESS), 45451));
         c.send(asio::buffer(rq));
-        c.receive(asio::buffer(buf, 100));
-        c.close();
-        // std::cout << "__DEBUG__"
-        //           << " about to print full buffer" << std::endl;
-        // for (int i = 0; i < 5012; i++)
-        // {
-        //     std::cout << buf[i] << std::endl;
-        // }
-        return std::string(buf);
-    };
+        int received = 0;
+        std::string fullString{};
+        asio::error_code error;
+        char buffer[1024];
+        while (true)
+        {
+            size_t len = c.read_some(asio::buffer(buffer), error);
 
-    // std::string request =
-    //   "POST /echo HTTP/1.1\r\n"
-    //   "Accept: application/json, text/plain, */*\r\n"
-    //   "Content-Type: application/json\r\n"
-    //   "Content-Type: application/json\r\n"
-    //   "Referer: http://some.site/\r\n"
-    //   "Sec-Fetch-Dest: empty\r\n"
-    //   "Sec-Fetch-Mode: cors\r\n"
-    //   "Sec-Fetch-Site: cross-site\r\n"
-    //   "\r\n";
+            if (error == asio::error::eof)
+            {
+                break;
+            }
+            else if (error)
+            {
+                throw system_error(error);
+            }
+
+            fullString.append(buffer, len);
+        }
+        c.close();
+        return fullString;
+    };
 
     std::string request =
       "OPTIONS /echo HTTP/1.1\r\n"
@@ -4014,9 +4031,9 @@ TEST_CASE("option_header_passed_in_full")
       "\r\n";
 
     auto res = make_request(request);
-    std::cout << "__DEBUG__" << std::endl
-              << res << std::endl
-              << "__DEBUG__" << std::endl;
-    CHECK(res.find("Content-Length: 0") != std::string::npos);
+    // std::cout << "__DEBUG__" << std::endl
+    //           << res << std::endl
+    //           << "__DEBUG__" << std::endl;
+    CHECK(res.find(ServerName) != std::string::npos);
     app.stop();
 }
