@@ -3946,33 +3946,17 @@ TEST_CASE("http2_upgrade_is_ignored")
     app.stop();
 }
 
-struct CustomCORSHandler
-{
-    // NOLINTNEXTLINE
-    struct context
-    {};
-
-    // NOLINTNEXTLINE
-    void before_handle(crow::request& /*request*/,
-                       crow::response& /*response*/,
-                       context& /*context*/) const {}
-
-    void
-      // NOLINTNEXTLINE
-      after_handle(crow::request& /*request*/, crow::response& response, context& /*context*/) const
-    {
-        response.set_header("Access-Control-Expose-Headers",
-                            "X-Total-Pages, X-Total-Entries, Content-Disposition");
-    }
-};
-
 TEST_CASE("option_header_passed_in_full")
 {
     const std::string ServerName = "AN_EXTREMELY_UNIQUE_SERVER_NAME";
 
-    crow::App<crow::CORSHandler,
-              CustomCORSHandler>
+    crow::App<crow::CORSHandler>
       app;
+
+    app.get_middleware<crow::CORSHandler>() //
+      .global()
+      .allow_credentials()
+      .expose("X-Total-Pages", "X-Total-Entries", "Content-Disposition");
 
     app.server_name(ServerName);
 
