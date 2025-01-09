@@ -3968,9 +3968,7 @@ struct CustomCORSHandler
 
 TEST_CASE("option_header_passed_in_full")
 {
-    static char buf[5012];
-
-    const std::string ServerName = "AN_EXTREMLY_UNIQUE_SERVER_NAME";
+    const std::string ServerName = "AN_EXTREMELY_UNIQUE_SERVER_NAME";
 
     crow::App<crow::CORSHandler,
               CustomCORSHandler>
@@ -3996,7 +3994,6 @@ TEST_CASE("option_header_passed_in_full")
         c.connect(asio::ip::tcp::endpoint(
           asio::ip::address::from_string(LOCALHOST_ADDRESS), 45451));
         c.send(asio::buffer(rq));
-        int received = 0;
         std::string fullString{};
         asio::error_code error;
         char buffer[1024];
@@ -4031,9 +4028,6 @@ TEST_CASE("option_header_passed_in_full")
       "\r\n";
 
     auto res = make_request(request);
-    // std::cout << "__DEBUG__" << std::endl
-    //           << res << std::endl
-    //           << "__DEBUG__" << std::endl;
     CHECK(res.find(ServerName) != std::string::npos);
     app.stop();
 }
