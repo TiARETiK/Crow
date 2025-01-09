@@ -1,11 +1,8 @@
-#include "crow/common.h"
-#include <asio/error_code.hpp>
-#include <asio/system_error.hpp>
-#include <exception>
 #define CROW_ENABLE_DEBUG
 #define CROW_LOG_LEVEL 0
 #include <sys/stat.h>
 
+#include <exception>
 #include <iostream>
 #include <vector>
 #include <thread>
@@ -42,8 +39,8 @@ public:
     HttpClient(std::string const& address, uint16_t port):
       c(ic)
     {
-        c.connect(asio::ip::tcp::endpoint(asio::ip::make_address(address),
-                                          port));
+        c.connect(asio::ip::tcp::endpoint( asio::ip::make_address(address),
+                                           port));
     }
 
     /** sends a request string through the socket */
@@ -678,8 +675,8 @@ TEST_CASE("server_handling_error_request_http_version")
         try
         {
             auto resp = HttpClient::request(LOCALHOST_ADDRESS,
-                                            45451,
-                                            "POST /\r\nContent-Length:3\r\nX-HeaderTest: 123\r\n\r\nA=B\r\n");
+                                                   45451,
+                                                   "POST /\r\nContent-Length:3\r\nX-HeaderTest: 123\r\n\r\nA=B\r\n");
             FAIL_CHECK();
         }
         catch (std::exception& e)
@@ -2396,6 +2393,7 @@ TEST_CASE("multipart")
 
         CHECK(res.code == 400);
         CHECK(res.body == "Empty boundary in multipart message");
+
     }
 
     //Boundary that differs from actual boundary
