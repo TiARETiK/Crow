@@ -557,7 +557,6 @@ namespace crow
                     return true;
                 }
             });
-            return;
         }
 
         void cancel_deadline_timer()

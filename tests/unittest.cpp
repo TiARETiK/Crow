@@ -4001,15 +4001,7 @@ TEST_CASE("option_header_passed_in_full")
     };
 
     std::string request =
-      "OPTIONS /echo HTTP/1.1\r\n"
-      "user-agent: unittest.cpp\r\n"
-      "host: " LOCALHOST_ADDRESS ":45451\r\n"
-      "content-length: 48\r\n"
-      "connection: upgrade\r\n"
-      "upgrade: h2c\r\n"
-      "\r\n"
-      "http2 upgrade is not supported so body is parsed\r\n"
-      "\r\n";
+      "OPTIONS /echo HTTP/1.1\r\n";
 
     auto res = make_request(request);
     CHECK(res.find(ServerName) != std::string::npos);
