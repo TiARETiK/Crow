@@ -3951,30 +3951,10 @@ TEST_CASE("option_header_passed_in_full")
         // return req.body;
         crow::response response{};
         // response.body = "SomeRandomLongOutputqwertyuiopasdfghjklzxcvbnmqwertyuiopasdfghjklzxcvbnmqwertyuiopasdfghjklzxcvbnmqwertyuiopasdfghjklzxcvbnmqwertyuiopasdfghjklzxcvbnmqwertyuiopasdfghjklzxcvbnmqwertyuiopasdfghjklzxcvbnmqwertyuiopasdfghjklzxcvbnmqwertyuiopasdfghjklzxcvbnmqwertyuiopasdfghjklzxcvbnmqwertyuiopasdfghjklzxcvbnmqwertyuiopasdfghjklzxcvbnmqwertyuiopasdfghjklzxcvbnmqwertyuiopasdfghjklzxcvbnmqwertyuiopasdfghjklzxcvbnmqwertyuiopasdfghjklzxcvbnmqwertyuiopasdfghjklzxcvbnmqwertyuiopasdfghjklzxcvbnmqwertyuiopasdfghjklzxcvbnmqwertyuiopasdfghjklzxcvbnmqwertyuiopasdfghjklzxcvbnmqwertyuiopasdfghjklzxcvbnmqwertyuiopasdfghjklzxcvbnmqwertyuiopasdfghjklzxcvbnmqwertyuiopasdfghjklzxcvbnmqwertyuiopasdfghjklzxcvbnmqwertyuiopasdfghjklzxcvbnmqwertyuiopasdfghjklzxcvbnmqwertyuiopasdfghjklzxcvbnmqwertyuiopasdfghjklzxcvbnmqwertyuiopasdfghjklzxcvbnmqwertyuiopasdfghjklzxcvbnmqwertyuiopasdfghjklzxcvbnmqwertyuiopasdfghjklzxcvbnmqwertyuiopasdfghjklzxcvbnmqwertyuiopasdfghjklzxcvbnm";
-        response.add_header("RandomHeaderKey1", "RandomHeaderValue1");
-        // response.add_header("RandomHeaderKey", "RandomHeaderValue");
-        // response.add_header("RandomHeaderKey", "RandomHeaderValue");
-        // response.add_header("RandomHeaderKey", "RandomHeaderValue");
-        // response.add_header("RandomHeaderKey", "RandomHeaderValue");
-        // response.add_header("RandomHeaderKey", "RandomHeaderValue");
-        // response.add_header("RandomHeaderKey", "RandomHeaderValue");
-        // response.add_header("RandomHeaderKey", "RandomHeaderValue");
-        // response.add_header("RandomHeaderKey", "RandomHeaderValue");
-        // response.add_header("RandomHeaderKey", "RandomHeaderValue");
-        // response.add_header("RandomHeaderKey", "RandomHeaderValue");
-        // response.add_header("RandomHeaderKey", "RandomHeaderValue");
-        // response.add_header("RandomHeaderKey", "RandomHeaderValue");
-        // response.add_header("RandomHeaderKey", "RandomHeaderValue");
-        // response.add_header("RandomHeaderKey", "RandomHeaderValue");
-        response.add_header("RandomHeaderKey2", "RandomHeaderValue2");
-        response.add_header("RandomHeaderKey3", "RandomHeaderValue3");
-        response.add_header("RandomHeaderKey4", "RandomHeaderValue4");
-        response.add_header("RandomHeaderKey5", "RandomHeaderValue5");
-        response.add_header("RandomHeaderKey6", "RandomHeaderValue6");
-        response.add_header("RandomHeaderKey7", "RandomHeaderValue7");
-        response.add_header("RandomHeaderKey7.5", "RandomHeaderValue7.5");
-        response.add_header("RandomHeaderKey8", "RandomHeaderValue8");
-        response.add_header("RandomHeaderKey9", "RandomHeaderValue9");
+        for (int i = 0; i < 100; i++)
+        {
+            response.add_header("RandomHeaderKey" + std::to_string(i), "RandomHeaderValue" + std::to_string(i));
+        }
 
         std::cout
           << "__DEBUG__"
@@ -3986,6 +3966,11 @@ TEST_CASE("option_header_passed_in_full")
     auto _ = app.bindaddr(LOCALHOST_ADDRESS).port(45451).run_async();
 
     app.wait_for_server_start();
+
+
+    while (true)
+        ;
+
     asio::io_service is;
 
     auto make_request = [&](const std::string& rq) {
