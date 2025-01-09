@@ -143,8 +143,9 @@ namespace crow
             ctx_ = detail::context<Middlewares...>();
             req_.middleware_context = static_cast<void*>(&ctx_);
             req_.middleware_container = static_cast<void*>(middlewares_);
-            req_.io_service = &adaptor_.get_io_service();
+
             req_.remote_ip_address = adaptor_.remote_endpoint().address().to_string();
+
             add_keep_alive_ = req_.keep_alive;
             close_connection_ = req_.close_connection;
 

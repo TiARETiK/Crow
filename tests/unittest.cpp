@@ -3944,9 +3944,6 @@ TEST_CASE("http2_upgrade_is_ignored")
 
 TEST_CASE("option_header_passed_in_full")
 {
-    // Crow does not support HTTP/2 so upgrade headers must be ignored
-    // relevant RFC: https://datatracker.ietf.org/doc/html/rfc7540#section-3.2
-
     static char buf[5012];
 
     SimpleApp app;
